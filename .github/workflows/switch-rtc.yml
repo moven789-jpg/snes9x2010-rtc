@@ -1,0 +1,54 @@
+name: Switch SPC7110 RTC build
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'spc7110-offline-rtc.patch'
+      - 'prepare-core.sh'
+      - '.github/workflows/switch-rtc.yml'
+permissions:
+  contents: read
+jobs:
+  rtc-tests:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch pinned upstream and apply RTC patch
+        run: bash prepare-core.sh
+      - name: RTC regression tests (ASan and UBSan)
+        run: bash core/tests/run_rtc_tests.sh
+      - name: Host core build
+        run: make -C core -f Makefile.libretro -j2
+  switch:
+    needs: rtc-tests
+    runs-on: ubuntu-24.04
+    container: devkitpro/devkita64:latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update official SDK and dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          pacman -Syu --noconfirm
+          pacman -S --needed --noconfirm devkit-env devkitA64 libnx switch-tools switch-mesa switch-zlib switch-bzip2 switch-liblzma switch-libpng switch-libvpx switch-ffmpeg switch-libopus git make
+      - name: Fetch pinned upstream and apply RTC patch
+        shell: bash
+        run: bash prepare-core.sh
+      - name: Build static core and linked RetroArch NRO
+        shell: bash
+        run: bash core/tools/build_switch_rtc.sh
+      - name: Upload full patched source
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: snes9x2010-rtc-source
+          path: core/
+          include-hidden-files: true
+      - name: Downloadable build files
+        uses: actions/upload-artifact@v4
+        with:
+          name: snes9x2010-switch-rtc
+          path: core/rtc-dist/
+          if-no-files-found: error
+          retention-days: 30
