@@ -30,8 +30,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          pacman -Syu --noconfirm
-          pacman -S --needed --noconfirm devkit-env devkitA64 libnx switch-tools switch-mesa switch-zlib switch-bzip2 switch-liblzma switch-libpng switch-libvpx switch-ffmpeg switch-libopus git make
+          pkgmgr=$(command -v dkp-pacman || command -v pacman)
+          "$pkgmgr" -Syu --noconfirm
+          "$pkgmgr" -S --needed --noconfirm devkit-env devkitA64 libnx switch-tools switch-mesa switch-zlib switch-bzip2 switch-liblzma switch-libpng switch-libvpx switch-ffmpeg switch-libopus
       - name: Fetch pinned upstream and apply RTC patch
         shell: bash
         run: bash prepare-core.sh

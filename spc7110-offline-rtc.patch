@@ -515,7 +515,7 @@ index 0000000..ce8d926
 +}
 diff --git a/tools/build_switch_rtc.sh b/tools/build_switch_rtc.sh
 new file mode 100755
-index 0000000..192a99e
+index 0000000..0525afe
 --- /dev/null
 +++ b/tools/build_switch_rtc.sh
 @@ -0,0 +1,37 @@
@@ -552,7 +552,7 @@ index 0000000..192a99e
 +{
 + printf 'RetroArch commit: %s\n' "$ra_commit"
 + aarch64-none-elf-gcc --version
-+ pacman -Q devkitA64 libnx switch-tools switch-mesa switch-ffmpeg
++ "$(command -v dkp-pacman || command -v pacman)" -Q devkitA64 libnx switch-tools switch-mesa switch-ffmpeg
 +} > "$core_root/rtc-dist/BUILD-INFO.txt"
 +cd "$core_root/rtc-dist"
 +sha256sum ./*.a ./*.nro BUILD-INFO.txt > SHA256SUMS.txt
